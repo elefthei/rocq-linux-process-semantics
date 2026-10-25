@@ -147,7 +147,7 @@ Proof.
   destruct H as (x & m1 & evs1 & evs2 & Hg & Hk & He).
   unfold get_model in Hg. inversion Hg; subst.
   rewrite Hc in Hk. cbv iota in Hk.
-  unfold err_ret, ret_only, pure in Hk. inversion Hk; subst.
+  unfold err_ret, ret_only, pure, Sys_Monad in Hk. inversion Hk; subst.
   cbn. rewrite bv_eqb_refl. reflexivity.
 Qed.
 
@@ -168,5 +168,5 @@ Proof.
   - unfold get_model in Hg. discriminate Hg.
   - unfold get_model in Hg. inversion Hg; subst.
     rewrite Hc in Hk. cbv iota in Hk.
-    unfold err_ret, ret_only, pure in Hk. discriminate Hk.
+    unfold err_ret, ret_only, pure, Sys_Monad in Hk. discriminate Hk.
 Qed.

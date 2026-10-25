@@ -146,7 +146,7 @@ Proof.
   rewrite getcwd_size_in_band.
   destruct Hin as [<- | Hin].
   - apply alt_r. reflexivity.
-  - apply alt_l. unfold errno_from, bind, choose.
+  - apply alt_l. unfold errno_from, bind, choose, Sys_Monad.
     exists e, m, [], [].
     split; [exists e; split; [exact Hin | reflexivity] |].
     split; reflexivity.
@@ -158,7 +158,7 @@ Lemma getcwd_only : forall m eff m' evs,
 Proof.
   intros m eff m' evs H. apply (proj1 (getcwd_dispatch m _)) in H. unfold getcwd_spec in H.
   rewrite getcwd_size_in_band in H.
-  unfold alt, errno_from, bind, choose, err_ret, ret_only, pure in H.
+  unfold alt, errno_from, bind, choose, err_ret, ret_only, pure, Sys_Monad in H.
   sys_destruct;
     (split; [reflexivity | split; [reflexivity |]]);
     first [ match goal with
@@ -321,10 +321,10 @@ Example setsid_eperm_forced_after_success :
 Proof.
   intros (_ & _ & (eff' & m' & evs' & Hspec & Hnr)).
   apply (proj1 (setsid_dispatch _ _)) in Hspec.
-  unfold setsid_spec, bind, get_model in Hspec. sys_destruct.
+  unfold setsid_spec, bind, get_model, Sys_Monad in Hspec. sys_destruct.
   assert (Hs : m_setsid_succeeded (with_setsid_succeeded m0) = true) by reflexivity.
   rewrite Hs in *.
-  unfold err_ret, ret_only, pure in *. sys_destruct.
+  unfold err_ret, ret_only, pure, Sys_Monad in *. sys_destruct.
   vm_compute in Hnr. discriminate Hnr.
 Qed.
 
@@ -374,7 +374,7 @@ Proof.
               (in_arg (mmap_in 8192) 5)) eqn:E2;
     [| vm_compute in E2; discriminate E2].
   intros Hspec.
-  unfold alt, bind, errno_from, choose, err_ret, ret_only, pure, get_model, modify in Hspec.
+  unfold alt, bind, errno_from, choose, err_ret, ret_only, pure, get_model, modify, Sys_Monad in Hspec.
   cbv beta zeta in Hspec.
   sys_destruct.
   - (* the errno arm: a refusal, which [Hnr] denies *)
@@ -426,7 +426,7 @@ Proof.
               + page_round_up_Z (bv_unsigned (in_arg mmap_overflow_i 1)))%Z eqn:E5;
     [| vm_compute in E5; discriminate E5].
   intros Hspec.
-  unfold err_ret, ret_only, pure in Hspec. sys_destruct.
+  unfold err_ret, ret_only, pure, Sys_Monad in Hspec. sys_destruct.
   vm_compute in Hnr. discriminate Hnr.
 Qed.
 

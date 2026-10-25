@@ -357,7 +357,7 @@ Proof.
       split; [reflexivity|]. split; [reflexivity|]. split; [reflexivity|].
       apply pure_ok.
     - intros (-> & -> & _ & H).
-      unfold err_ret, ret_only, pure in H. inversion H; subst.
+      unfold err_ret, ret_only, pure, Sys_Monad in H. inversion H; subst.
       split; [reflexivity|]. split; [reflexivity|]. reflexivity. }
   destruct (read_bytes_map (in_wmem i) oset (Z_to_bv 64 NSIG_BYTES)) eqn:Hw.
   - rewrite check_one_write_ok_iff. split.
@@ -367,7 +367,7 @@ Proof.
     + intros (-> & -> & _ & H).
       destruct H as (i' & m2 & evs1 & evs2 & Hi & Hk & Hev).
       unfold input in Hi. inversion Hi; subst. cbn in Hk.
-      rewrite Hw in Hk. unfold pure in Hk. inversion Hk; subst.
+      rewrite Hw in Hk. unfold pure, Sys_Monad in Hk. inversion Hk; subst.
       split; [reflexivity|]. split; [reflexivity|]. reflexivity.
   - split; [discriminate|]. intros (-> & -> & _ & H).
     destruct H as (i' & m2 & evs1 & evs2 & Hi & Hk & _).

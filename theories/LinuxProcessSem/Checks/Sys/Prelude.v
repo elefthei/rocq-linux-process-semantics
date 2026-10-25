@@ -520,7 +520,7 @@ Lemma input_bind_ok_inv {A : Type} : forall (k : SyscallInput -> Sys A)
   bind input k i m (Ok x m' evs) -> k i i m (Ok x m' evs).
 Proof.
   intros k i m x m' evs H.
-  unfold bind, input in H. cbv beta iota in H.
+  unfold bind, input, Sys_Monad in H. cbv beta iota in H.
   destruct H as (i' & m1 & evs1 & evs2 & Hinput & Hk & Hevs).
   inversion Hinput; clear Hinput; subst.
   exact Hk.
@@ -533,7 +533,7 @@ Lemma record_copyins_ok_inv : forall reads spec i m eff m' evs,
     eff = with_copyins (reads ++ eff_copyins core) core.
 Proof.
   intros reads spec i m eff m' evs H.
-  unfold record_copyins, bind, pure in H. cbv beta iota in H.
+  unfold record_copyins, bind, pure, Sys_Monad in H. cbv beta iota in H.
   destruct H as (core & m1 & evs1 & evs2 & Hcore & Hpure & Hevs).
   inversion Hpure; clear Hpure; subst.
   exists core. split; [rewrite app_nil_r; exact Hcore|reflexivity].
@@ -543,7 +543,7 @@ Lemma input_bind_unmodeled_inv {A : Type} :
     forall (k : SyscallInput -> Sys A) i m,
   bind input k i m Unmodeled -> k i i m Unmodeled.
 Proof.
-  intros k i m H. unfold bind, input in H. cbv beta iota in H.
+  intros k i m H. unfold bind, input, Sys_Monad in H. cbv beta iota in H.
   destruct H as [Hinput | (i' & m1 & evs1 & Hinput & Hk)].
   - discriminate Hinput.
   - inversion Hinput; clear Hinput; subst. exact Hk.
@@ -558,7 +558,7 @@ Lemma get_model_bind_ok_inv {A : Type} : forall (k : Model -> Sys A)
   bind get_model k i m (Ok x m' evs) -> k m i m (Ok x m' evs).
 Proof.
   intros k i m x m' evs H.
-  unfold bind, get_model in H. cbv beta iota in H.
+  unfold bind, get_model, Sys_Monad in H. cbv beta iota in H.
   destruct H as (m0 & m1 & evs1 & evs2 & Hget & Hk & Hevs).
   inversion Hget; clear Hget; subst.
   exact Hk.
@@ -568,7 +568,7 @@ Lemma get_model_bind_unmodeled_inv {A : Type} :
     forall (k : Model -> Sys A) i m,
   bind get_model k i m Unmodeled -> k m i m Unmodeled.
 Proof.
-  intros k i m H. unfold bind, get_model in H. cbv beta iota in H.
+  intros k i m H. unfold bind, get_model, Sys_Monad in H. cbv beta iota in H.
   destruct H as [Hget | (m0 & m1 & evs1 & Hget & Hk)].
   - discriminate Hget.
   - inversion Hget; clear Hget; subst. exact Hk.
@@ -577,7 +577,7 @@ Qed.
 Lemma record_copyins_unmodeled_inv : forall reads spec i m,
   record_copyins reads spec i m Unmodeled -> spec i m Unmodeled.
 Proof.
-  intros reads spec i m H. unfold record_copyins, bind, pure in H.
+  intros reads spec i m H. unfold record_copyins, bind, pure, Sys_Monad in H.
   cbv beta iota in H.
   destruct H as [Hcore | (core & m1 & evs1 & Hcore & Hpure)].
   - exact Hcore.
@@ -813,7 +813,7 @@ Ltac sys_unfold :=
     set_sigmask, set_sigaltstack_installed,
     set_sigmask_deliver, set_sigabrt_pending, set_killed,
     get_model, get_fds, get_vmmaps, modify, input, sysno, arg,
-    bind, pure, choose, alt, unmodeled, emit in *.
+    bind, pure, choose, alt, unmodeled, emit, Sys_Monad in *.
 
 (* Bridges for the channel short-write acceptors: the claimed return
    decodes to the delivered prefix's length. *)

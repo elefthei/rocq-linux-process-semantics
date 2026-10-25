@@ -834,7 +834,7 @@ Proof.
   intros uargs i m eff m' evs H.
   unfold clone3_resolve, record_copyins in H.
   destruct H as (e0 & m0 & evs0 & evs2 & H0 & Hp & Hevs).
-  unfold pure in Hp. inversion Hp; clear Hp; subst.
+  unfold pure, Sys_Monad in Hp. inversion Hp; clear Hp; subst.
   exists e0. rewrite app_nil_r in *. split; [exact H0 | reflexivity].
 Qed.
 

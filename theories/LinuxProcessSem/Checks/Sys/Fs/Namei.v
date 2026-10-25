@@ -540,7 +540,7 @@ Proof.
   apply get_model_bind_ok_inv in H. cbv beta iota in H.
   unfold check_unlinkat.
   destruct (negb (modeled_unlink_flags flags)) eqn:Hfl.
-  { cbv iota in H. unfold err_ret, ret_only, pure in H. inversion H; subst.
+  { cbv iota in H. unfold err_ret, ret_only, pure, Sys_Monad in H. inversion H; subst.
     cbn. rewrite bv_eqb_refl. reflexivity. }
   cbv iota in H. apply record_copyins_ok_inv in H.
   destruct H as (core & Hcore & ->).
@@ -562,7 +562,7 @@ Proof.
   apply get_model_bind_unmodeled_inv in H. cbv beta iota in H.
   unfold check_unlinkat.
   destruct (negb (modeled_unlink_flags flags)) eqn:Hfl.
-  { cbv iota in H. unfold err_ret, ret_only, pure in H. discriminate H. }
+  { cbv iota in H. unfold err_ret, ret_only, pure, Sys_Monad in H. discriminate H. }
   cbv iota in H. apply record_copyins_unmodeled_inv in H.
   cbv zeta. unfold check_copyins_after.
   rewrite (check_unlinkat_body_complete_unmodeled i dirfd pathp flags m

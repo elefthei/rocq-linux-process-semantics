@@ -89,7 +89,7 @@ Proof.
   - destruct Herr as (e & m1 & evs1 & evs2 & Hch & Hret & ->).
     unfold errno_from, choose in Hch.
     destruct Hch as (x & HIn & Heq). inversion Heq; clear Heq; subst.
-    unfold err_ret, ret_only, pure in Hret. inversion Hret; clear Hret; subst.
+    unfold err_ret, ret_only, pure, Sys_Monad in Hret. inversion Hret; clear Hret; subst.
     unfold check_errno_only. rewrite (errno_ret_in_intro _ _ HIn). reflexivity.
   - unfold choose in Hno. destruct Hno as (? & [] & _).
 Qed.
@@ -2125,7 +2125,7 @@ Proof.
   unfold recv_fd_answer in H. unfold check_recv_fd_answer.
   destruct (sockfd_lookup_errno fds fd) as [e|];
     [|unfold unmodeled in H; discriminate].
-  unfold err_ret, ret_only, pure in H. inv_ok.
+  unfold err_ret, ret_only, pure, Sys_Monad in H. inv_ok.
   cbn. rewrite bv_eqb_refl. reflexivity.
 Qed.
 
@@ -2137,7 +2137,7 @@ Proof.
   intros fds fd eff m i H.
   unfold recv_fd_answer in H. unfold check_recv_fd_answer.
   destruct (sockfd_lookup_errno fds fd) as [e|]; [|reflexivity].
-  unfold err_ret, ret_only, pure in H. discriminate.
+  unfold err_ret, ret_only, pure, Sys_Monad in H. discriminate.
 Qed.
 
 
@@ -2176,7 +2176,7 @@ Lemma socketpair_written_no_unmodeled : forall sv fd1 fd2 i m,
   ~ socketpair_written sv fd1 fd2 i m Unmodeled.
 Proof.
   intros sv fd1 fd2 i m H. unfold socketpair_written in H.
-  unfold alt, errno_from, err_ret, ret_only, bind, choose, pure in H.
+  unfold alt, errno_from, err_ret, ret_only, bind, choose, pure, Sys_Monad in H.
   destruct H as [H|[H|H]]; inv_ok.
 Qed.
 
@@ -2185,7 +2185,7 @@ Lemma socketpair_faulted_no_unmodeled : forall i m,
   ~ socketpair_faulted i m Unmodeled.
 Proof.
   intros i m H. unfold socketpair_faulted in H.
-  unfold alt, errno_from, err_ret, ret_only, bind, choose, pure in H.
+  unfold alt, errno_from, err_ret, ret_only, bind, choose, pure, Sys_Monad in H.
   destruct H as [H|H]; inv_ok.
 Qed.
 
@@ -2227,7 +2227,7 @@ Lemma check_socketpair_written_complete_ok : forall sv fd1 fd2 eff m m' evs i,
 Proof.
   intros sv fd1 fd2 eff m m' evs i H.
   unfold socketpair_written in H.
-  unfold alt, errno_from, err_ret, ret_only, bind, choose, pure in H.
+  unfold alt, errno_from, err_ret, ret_only, bind, choose, pure, Sys_Monad in H.
   unfold check_socketpair_written.
   destruct H as [H|[H|H]]; inv_ok.
   - cbv beta iota. rewrite (errno_ret_in_intro _ _ H). reflexivity.
@@ -2294,7 +2294,7 @@ Lemma check_socketpair_faulted_complete_ok : forall eff m m' evs i,
   check_socketpair_faulted eff m = CheckOk m' evs.
 Proof.
   intros eff m m' evs i H. unfold socketpair_faulted in H.
-  unfold alt, errno_from, err_ret, ret_only, bind, choose, pure in H.
+  unfold alt, errno_from, err_ret, ret_only, bind, choose, pure, Sys_Monad in H.
   unfold check_socketpair_faulted.
   destruct H as [H|H]; inv_ok.
   - cbv beta iota. rewrite (errno_ret_in_intro _ _ H). reflexivity.
@@ -2385,7 +2385,7 @@ Proof.
   intros i family type protocol sv eff m m' evs H.
   unfold socketpair_spec in H. unfold check_socketpair.
   destruct (negb (socketpair_flags_ok type)) eqn:Hfl; cbv beta iota in H |- *.
-  { unfold err_ret, ret_only, pure in H. inv_ok.
+  { unfold err_ret, ret_only, pure, Sys_Monad in H. inv_ok.
     cbn. rewrite bv_eqb_refl. reflexivity. }
   destruct (negb (socketpair_modeled_b family type protocol)) eqn:Hmo;
     cbv beta iota in H |- *; [unfold unmodeled in H; discriminate|].
@@ -2409,7 +2409,7 @@ Proof.
   intros i family type protocol sv m eff H.
   unfold socketpair_spec in H. unfold check_socketpair.
   destruct (negb (socketpair_flags_ok type)) eqn:Hfl; cbv beta iota in H |- *.
-  { unfold err_ret, ret_only, pure in H. discriminate. }
+  { unfold err_ret, ret_only, pure, Sys_Monad in H. discriminate. }
   destruct (negb (socketpair_modeled_b family type protocol)) eqn:Hmo;
     cbv beta iota in H |- *; [reflexivity|].
   apply bind_input_model_inv in H.
@@ -2482,7 +2482,7 @@ Proof.
   destruct (access_okb buf (bv_unsigned size)) eqn:Hok;
     cbv beta iota in H |- *;
     [now apply check_recv_fd_answer_complete_ok in H|].
-  unfold err_ret, ret_only, pure in H. inv_ok.
+  unfold err_ret, ret_only, pure, Sys_Monad in H. inv_ok.
   cbn. rewrite bv_eqb_refl. reflexivity.
 Qed.
 
@@ -2500,7 +2500,7 @@ Proof.
   destruct (access_okb buf (bv_unsigned size)) eqn:Hok;
     cbv beta iota in H |- *;
     [now eapply check_recv_fd_answer_complete_unmodeled; exact H|].
-  unfold err_ret, ret_only, pure in H. discriminate.
+  unfold err_ret, ret_only, pure, Sys_Monad in H. discriminate.
 Qed.
 
 (* -------------------------------------------------------------- recvmsg *)

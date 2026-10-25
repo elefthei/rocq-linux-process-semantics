@@ -38,3 +38,8 @@ theories/Examples/*/*_code.v
 # Python
 __pycache__/
 *.pyc
+
+# Local analysis artifacts
+/.omp/
+/.junco/
+/.archify/

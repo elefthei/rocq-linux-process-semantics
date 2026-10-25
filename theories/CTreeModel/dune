@@ -1,0 +1,11 @@
+; The ctree model of the process and its refinement of Run.run, installed
+; by the opam package rocq-linux-process-semantics-ctree.
+; No subdirectories, but this stanza is what stops the root theories/dune
+; (include_subdirs qualified) from absorbing this directory, as for Common/.
+(include_subdirs qualified)
+
+(rocq.theory
+ (name LinuxProcessSemantics.CTreeModel)
+ (package rocq-linux-process-semantics-ctree)
+ (theories Stdlib stdpp ReadFile Flocq LinuxProcessSemantics
+           CTree ITree ExtLib Paco Coinduction RelationAlgebra))

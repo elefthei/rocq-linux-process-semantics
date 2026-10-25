@@ -96,6 +96,10 @@ jobs:
             startGroup "Install dependencies"
               opam update -y
               opam pin add -k version -y dune "${{ matrix.dune }}"
+              # rocq-ctree is not on opam and commits no .opam file: dune
+              # generates it under _build.
+              git clone --depth 1 -b fix/universe-check https://github.com/vellvm/ctrees.git "$HOME/ctrees"
+              (cd "$HOME/ctrees" && opam exec -- dune build rocq-ctree.opam && cp _build/default/rocq-ctree.opam . && opam pin add -n -y -k path rocq-ctree .)
               opam install -y -j 2 --deps-only .
             endGroup
           script: |
@@ -136,6 +140,12 @@ jobs:
           # Sets DUNE_CACHE=enabled and keeps the dune cache between runs.
           dune-cache: true
 
+      - name: Pin rocq-ctree (not on opam; dune generates its .opam file)
+        run: |
+          opam install -y dune
+          git clone --depth 1 -b fix/universe-check https://github.com/vellvm/ctrees.git "$HOME/ctrees"
+          (cd "$HOME/ctrees" && opam exec -- dune build rocq-ctree.opam && cp _build/default/rocq-ctree.opam . && opam pin add -n -y -k path rocq-ctree .)
+
       - name: Pin and install all packages
         run: opam pin add --yes .
 
@@ -147,6 +157,8 @@ jobs:
           From LinuxProcessSemantics.Common Require Import ShapeAlg.
           From LinuxProcessSemantics.Examples.rwx_flag_ns Require Import Proof.
           Check Proof.strong_universal.
+          From LinuxProcessSemantics.CTreeModel Require Import RunRefine.
+          Check RunRefine.ct_run_refines_run.
           EOF
           opam exec -- rocq c "$RUNNER_TEMP/Use.v"
           opam exec -- elf-snapshot --help > /dev/null

@@ -43,7 +43,7 @@ Lemma futex_wake_private_answers : forall uaddr i m eff m' evs,
 Proof.
   intros uaddr i m eff m' evs H.
   unfold futex_wake_private_spec, futex_key_check, err_ret, ret_only,
-         pure in H.
+         pure, Sys_Monad in H.
   destruct (negb (futex_aligned_b uaddr)),
            (negb (access_okb uaddr FUTEX_WORD_SIZE));
     cbv iota in H; inversion H; subst; repeat split; auto.
@@ -74,7 +74,7 @@ Proof.
   destruct (negb (futex_aligned_b uaddr)),
            (negb (access_okb uaddr FUTEX_WORD_SIZE));
     cbv iota in H;
-    try (unfold err_ret, ret_only, pure in H; inversion H; subst;
+    try (unfold err_ret, ret_only, pure, Sys_Monad in H; inversion H; subst;
          repeat split; auto; fail).
   apply input_bind_ok_inv in H. cbv beta in H.
   destruct (read_bytes_map (in_mem i) uaddr (Z_to_bv 64 FUTEX_WORD_SIZE))
@@ -82,7 +82,7 @@ Proof.
   apply record_copyins_ok_inv in H. destruct H as (core & Hcore & ->).
   destruct (bv_eqb (le_bytes_to_word uval) val); cbv iota in Hcore;
     [unfold unmodeled in Hcore; discriminate|].
-  unfold err_ret, ret_only, pure in Hcore. inversion Hcore; subst.
+  unfold err_ret, ret_only, pure, Sys_Monad in Hcore. inversion Hcore; subst.
   repeat split; auto.
 Qed.
 

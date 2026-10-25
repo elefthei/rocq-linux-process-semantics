@@ -4125,7 +4125,7 @@ Proof.
   intros i fd e iovs eff m m' evs H.
   unfold readv_imported in H. unfold check_readv_imported. cbv zeta in *.
   unfold readv_buf_gap, err_ret, ret_only, set_stdin, set_fds, modify, bind,
-    pure, choose, emit, unmodeled in H.
+    pure, choose, emit, unmodeled, Sys_Monad in H.
   destruct (Z.eqb (iovs_total (cap_iovecs iovs)) 0) eqn:Hz; hall Hz; inv_ok.
   { inv_ok. cbn; rewrite bv_eqb_refl. reflexivity. }
   destruct e as [ch|p off|p off| |sk|pid| | ].
@@ -4239,7 +4239,7 @@ Proof.
   intros i fd e iovs m eff H.
   unfold readv_imported in H. unfold check_readv_imported. cbv zeta in *.
   unfold readv_buf_gap, err_ret, ret_only, set_stdin, set_fds, modify, bind,
-    pure, choose, emit, unmodeled in H.
+    pure, choose, emit, unmodeled, Sys_Monad in H.
   destruct (Z.eqb (iovs_total (cap_iovecs iovs)) 0) eqn:Hz; hall Hz; inv_ok;
     try discriminate.
   destruct e as [ch|p off|p off| |sk|pid| | ].

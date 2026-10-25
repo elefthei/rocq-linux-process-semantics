@@ -1068,7 +1068,7 @@ Local Lemma check_ret_only_complete_ok : forall i eff r m m' evs,
   check_ret_only eff r m [] = CheckOk m' evs /\ eff_copyins eff = [].
 Proof.
   intros i eff r m m' evs H.
-  unfold ret_only, pure in H. inversion H; clear H; subst.
+  unfold ret_only, pure, Sys_Monad in H. inversion H; clear H; subst.
   split; [cbn; rewrite bv_eqb_refl; reflexivity|reflexivity].
 Qed.
 
@@ -1519,7 +1519,7 @@ Proof.
   intros i dirfd pathp flags eff m m' evs H.
   unfold openat_core_spec in H.
   apply input_bind_ok_inv in H. cbv beta in H.
-  unfold bind, get_model in H. cbv beta iota in H.
+  unfold bind, get_model, Sys_Monad in H. cbv beta iota in H.
   destruct H as (model & m1 & evs1 & evs2 & Hget & Hbody & Hevs).
   inversion Hget; clear Hget; subst.
   destruct (negb (modeled_open_flags flags)) eqn:Hflags.
@@ -1554,7 +1554,7 @@ Local Definition completes_unmodeled (i : SyscallInput) (m : Model)
 
 Local Lemma ret_only_no_unmodeled : forall r i m,
   ~ ret_only r i m Unmodeled.
-Proof. intros r i m H. unfold ret_only, pure in H. discriminate H. Qed.
+Proof. intros r i m H. unfold ret_only, pure, Sys_Monad in H. discriminate H. Qed.
 
 Local Lemma open_result_spec_no_unmodeled : forall m mk i,
   ~ open_result_spec m mk i m Unmodeled.
@@ -1863,7 +1863,7 @@ Local Lemma openat_core_unmodeled_inv : forall i dirfd pathp flags m,
 Proof.
   intros i dirfd pathp flags m H. unfold openat_core_spec in H.
   apply input_bind_unmodeled_inv in H. cbv beta in H.
-  unfold bind, get_model in H. cbv beta iota in H.
+  unfold bind, get_model, Sys_Monad in H. cbv beta iota in H.
   destruct H as [Hget | (model & m1 & evs1 & Hget & Hbody)].
   - discriminate Hget.
   - inversion Hget; clear Hget; subst.
@@ -2175,14 +2175,14 @@ Qed.
 Ltac fa_det :=
   match goal with
   | H : err_ret _ _ _ (Ok _ _ _) |- _ =>
-      unfold err_ret, ret_only, pure in H; inversion H; subst;
+      unfold err_ret, ret_only, pure, Sys_Monad in H; inversion H; subst;
       cbn; rewrite ?bv_eqb_refl; reflexivity
   end.
 
 Ltac fa_det_u :=
   match goal with
   | H : err_ret _ _ _ Unmodeled |- _ =>
-      unfold err_ret, ret_only, pure in H; discriminate H
+      unfold err_ret, ret_only, pure, Sys_Monad in H; discriminate H
   end.
 
 Ltac fa_unmod_h :=
@@ -2364,7 +2364,7 @@ Proof.
   apply get_model_bind_ok_inv in H. cbv beta iota in H.
   unfold check_faccessat.
   destruct (negb (modeled_access_mode mode)) eqn:Hmo.
-  { cbv iota in H. unfold err_ret, ret_only, pure in H. inversion H; subst.
+  { cbv iota in H. unfold err_ret, ret_only, pure, Sys_Monad in H. inversion H; subst.
     cbn. rewrite bv_eqb_refl. reflexivity. }
   destruct (negb (access_mode_f_ok mode)) eqn:Hfok; cbv iota in H;
     [fa_unmod_h|].
@@ -2388,7 +2388,7 @@ Proof.
   apply get_model_bind_unmodeled_inv in H. cbv beta iota in H.
   unfold check_faccessat.
   destruct (negb (modeled_access_mode mode)) eqn:Hmo.
-  { cbv iota in H. unfold err_ret, ret_only, pure in H. discriminate H. }
+  { cbv iota in H. unfold err_ret, ret_only, pure, Sys_Monad in H. discriminate H. }
   destruct (negb (access_mode_f_ok mode)) eqn:Hfok; cbv iota in H;
     [reflexivity|].
   apply record_copyins_unmodeled_inv in H.
@@ -2472,10 +2472,10 @@ Proof.
   apply get_model_bind_ok_inv in H. cbv beta iota in H.
   unfold check_faccessat2.
   destruct (negb (modeled_access_mode mode)) eqn:Hmo.
-  { cbv iota in H. unfold err_ret, ret_only, pure in H. inversion H; subst.
+  { cbv iota in H. unfold err_ret, ret_only, pure, Sys_Monad in H. inversion H; subst.
     cbn. rewrite bv_eqb_refl. reflexivity. }
   destruct (negb (valid_access_flags flags)) eqn:Hfl.
-  { cbv iota in H. unfold err_ret, ret_only, pure in H. inversion H; subst.
+  { cbv iota in H. unfold err_ret, ret_only, pure, Sys_Monad in H. inversion H; subst.
     cbn. rewrite bv_eqb_refl. reflexivity. }
   destruct (negb (modeled_access_flags flags)) eqn:Hmf; cbv iota in H;
     [fa_unmod_h|].
@@ -2502,9 +2502,9 @@ Proof.
   apply get_model_bind_unmodeled_inv in H. cbv beta iota in H.
   unfold check_faccessat2.
   destruct (negb (modeled_access_mode mode)) eqn:Hmo.
-  { cbv iota in H. unfold err_ret, ret_only, pure in H. discriminate H. }
+  { cbv iota in H. unfold err_ret, ret_only, pure, Sys_Monad in H. discriminate H. }
   destruct (negb (valid_access_flags flags)) eqn:Hfl.
-  { cbv iota in H. unfold err_ret, ret_only, pure in H. discriminate H. }
+  { cbv iota in H. unfold err_ret, ret_only, pure, Sys_Monad in H. discriminate H. }
   destruct (negb (modeled_access_flags flags)) eqn:Hmf; cbv iota in H;
     [reflexivity|].
   destruct (negb (access_mode_f_ok mode)) eqn:Hfok; cbv iota in H;

@@ -340,7 +340,7 @@ Proof.
   end.
   eapply (clone_never_returns_zero (Z_to_bv 64 SIGCHLD) i m).
   unfold clone_spec, clone_fork_flags_b. rewrite bv_eqb_refl.
-  unfold clone_resolve. sys_unfold. cbv iota. eassumption.
+  cbv iota. eassumption.
 Qed.
 
 (** THE ARM IS THE ONE IT CLAIMS TO BE.  Every lemma above pins what

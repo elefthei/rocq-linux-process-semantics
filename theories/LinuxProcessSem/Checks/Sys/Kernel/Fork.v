@@ -309,15 +309,13 @@ Lemma check_clone3_resolve_complete_ok : forall uargs eff m m' evs i,
   check_clone3_resolve uargs eff m = CheckOk m' evs.
 Proof.
   intros uargs eff m m' evs i H.
-  unfold clone3_resolve, record_copyins in H.
-  destruct H as (e0 & m0 & evs0 & evs2 & H0 & Hp & Hevs).
-  unfold pure in Hp. inversion Hp; clear Hp; subst.
-  try rewrite app_nil_r.
-  pose proof (check_clone_resolve_complete_ok e0 m _ evs0 i H0) as Hc.
+  unfold clone3_resolve in H.
+  apply record_copyins_ok_inv in H. destruct H as (core & Hcore & ->).
+  pose proof (check_clone_resolve_complete_ok core m m' evs i Hcore) as Hc.
   unfold check_clone_resolve in Hc.
   destruct (negb (clone_no_shared_file_b (m_fds m))) eqn:Hg;
     cbv iota in Hc; [discriminate|].
-  destruct e0 as [ret ws zs us cs cis].
+  destruct core as [ret ws zs us cs cis].
   destruct ws as [|? ?]; try discriminate.
   destruct zs as [|? ?]; try discriminate.
   destruct us as [|? ?]; try discriminate.
@@ -333,9 +331,8 @@ Lemma check_clone3_resolve_complete_unmodeled : forall uargs m i eff,
   check_clone3_resolve uargs eff m = CheckUnmodeled.
 Proof.
   intros uargs m i eff H.
-  unfold clone3_resolve, record_copyins in H.
-  destruct H as [H|H]; [|destruct H as [? [? [? [_ Hp]]]];
-                          unfold pure in Hp; discriminate].
+  unfold clone3_resolve in H.
+  apply record_copyins_unmodeled_inv in H.
   pose proof (check_clone_resolve_complete_unmodeled m i eff H) as Hc.
   unfold check_clone_resolve in Hc. unfold check_clone3_resolve.
   destruct (negb (clone_no_shared_file_b (m_fds m))) eqn:Hg;

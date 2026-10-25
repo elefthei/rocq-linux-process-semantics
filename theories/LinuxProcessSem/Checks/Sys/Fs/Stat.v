@@ -97,78 +97,6 @@ Definition check_newfstatat (i : SyscallInput) (dirfd pathp flag : word)
         end
     end.
 
-(** The four inversions the completeness lemmas need, to strip
-    [newfstatat_spec]'s [input] bind and its [record_copyins] wrapper.
-    They are mirrored from [Checks.Sys.Fs.Open], where the same four are
-    [Local], rather than hoisted into [Checks.Sys.Prelude]: the two
-    checkers are kept arm-for-arm side by side on purpose (see the
-    SHARED WITH paragraph on [Stat.newfstatat_spec]), and the shared
-    combinator is worth extracting when [readlinkat] becomes the third
-    call site, not before. *)
-Local Lemma input_bind_ok_inv {A : Type} : forall (k : SyscallInput -> Sys A)
-    i m x m' evs,
-  bind input k i m (Ok x m' evs) -> k i i m (Ok x m' evs).
-Proof.
-  intros k i m x m' evs H.
-  unfold bind, input in H. cbv beta iota in H.
-  destruct H as (i' & m1 & evs1 & evs2 & Hinput & Hk & Hevs).
-  inversion Hinput; clear Hinput; subst.
-  exact Hk.
-Qed.
-
-Local Lemma input_bind_unmodeled_inv {A : Type} :
-    forall (k : SyscallInput -> Sys A) i m,
-  bind input k i m Unmodeled -> k i i m Unmodeled.
-Proof.
-  intros k i m H. unfold bind, input in H. cbv beta iota in H.
-  destruct H as [Hinput | (i' & m1 & evs1 & Hinput & Hk)].
-  - discriminate Hinput.
-  - inversion Hinput; clear Hinput; subst. exact Hk.
-Qed.
-
-Local Lemma bind_get_model_ok_inv {A : Type} : forall (k : Model -> Sys A)
-    i m x m' evs,
-  bind get_model k i m (Ok x m' evs) -> k m i m (Ok x m' evs).
-Proof.
-  intros k i m x m' evs H.
-  unfold bind, get_model in H. cbv beta iota in H.
-  destruct H as (m1 & m2 & evs1 & evs2 & Hget & Hk & Hevs).
-  inversion Hget; clear Hget; subst. exact Hk.
-Qed.
-
-Local Lemma bind_get_model_unmodeled_inv {A : Type} :
-    forall (k : Model -> Sys A) i m,
-  bind get_model k i m Unmodeled -> k m i m Unmodeled.
-Proof.
-  intros k i m H. unfold bind, get_model in H. cbv beta iota in H.
-  destruct H as [Hget | (m1 & m2 & evs1 & Hget & Hk)].
-  - discriminate Hget.
-  - inversion Hget; clear Hget; subst. exact Hk.
-Qed.
-
-Local Lemma record_copyins_ok_inv : forall reads spec i m eff m' evs,
-  record_copyins reads spec i m (Ok eff m' evs) ->
-  exists core,
-    spec i m (Ok core m' evs) /\
-    eff = with_copyins (reads ++ eff_copyins core) core.
-Proof.
-  intros reads spec i m eff m' evs H.
-  unfold record_copyins, bind, pure in H. cbv beta iota in H.
-  destruct H as (core & m1 & evs1 & evs2 & Hcore & Hpure & Hevs).
-  inversion Hpure; clear Hpure; subst.
-  exists core. split; [rewrite app_nil_r; exact Hcore|reflexivity].
-Qed.
-
-Local Lemma record_copyins_unmodeled_inv : forall reads spec i m,
-  record_copyins reads spec i m Unmodeled -> spec i m Unmodeled.
-Proof.
-  intros reads spec i m H. unfold record_copyins, bind, pure in H.
-  cbv beta iota in H.
-  destruct H as [Hcore | (core & m1 & evs1 & Hcore & Hpure)].
-  - exact Hcore.
-  - discriminate Hpure.
-Qed.
-
 Lemma check_newfstatat_sound_ok : forall i dirfd pathp flag eff m m' evs,
   check_newfstatat i dirfd pathp flag eff m = CheckOk m' evs ->
   newfstatat_spec dirfd pathp flag i m (Ok eff m' evs).
@@ -789,13 +717,13 @@ Lemma check_fstat_complete_ok : forall i fd statbuf eff m m' evs,
 Proof.
   intros i fd statbuf eff m m' evs H.
   unfold fstat_spec in H. unfold check_fstat.
-  apply bind_get_model_ok_inv in H. cbv beta in H.
+  apply get_model_bind_ok_inv in H. cbv beta in H.
   destruct (fd_lookup (m_fds m) fd) as [e|] eqn:Hfd; cbv iota in H;
     [destruct e; try (now apply check_fstat_file_complete_ok);
        try (now apply check_fstat_devnull_complete_ok);
        try (now apply check_fstat_urandom_complete_ok);
        unfold unmodeled in H; discriminate|].
-  unfold pure in H. inversion H; clear H; subst.
+  unfold pure, Sys_Monad in H. inversion H; clear H; subst.
   apply check_ret_only_ok_iff. now repeat split.
 Qed.
 
@@ -805,11 +733,11 @@ Lemma check_fstat_complete_unmodeled : forall i fd statbuf m eff,
 Proof.
   intros i fd statbuf m eff H.
   unfold fstat_spec in H. unfold check_fstat.
-  apply bind_get_model_unmodeled_inv in H. cbv beta in H.
+  apply get_model_bind_unmodeled_inv in H. cbv beta in H.
   destruct (fd_lookup (m_fds m) fd) as [e|] eqn:Hfd; cbv iota in H;
     [destruct e; try reflexivity;
        first [eapply check_fstat_file_complete_unmodeled; exact H
              |eapply check_fstat_devnull_complete_unmodeled; exact H
              |eapply check_fstat_urandom_complete_unmodeled; exact H]|].
-  unfold pure in H. discriminate.
+  unfold pure, Sys_Monad in H. discriminate.
 Qed.

@@ -68,7 +68,7 @@ Theorem denote_normal_form : forall c i m o,
   denote c i m o <-> o = evaluate c i m.
 Proof.
   intros [argument mask result|] i m [eff m' evs|];
-    unfold denote, evaluate, bind, set_halted, modify, ret_only, pure, unmodeled;
+    unfold denote, evaluate, bind, set_halted, modify, ret_only, pure, unmodeled, Sys_Monad;
     cbn.
   - split.
     + intros (x & m1 & evs1 & evs2 & H1 & H2 & Hevs).

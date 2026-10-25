@@ -52,7 +52,7 @@ Lemma socket_write_never_admitted : forall fd buf count i m sk o,
 Proof.
   intros fd buf count i m sk o Hfd Hspec.
   destruct o as [y m2 evs|]; [|reflexivity]. exfalso.
-  unfold write_spec, bind, input, get_model, unmodeled in Hspec.
+  unfold write_spec, bind, input, get_model, unmodeled, Sys_Monad in Hspec.
   destruct Hspec as (x & m1 & evs1 & evs2 & Hin & Hrest & _).
   injection Hin as -> -> ->.
   destruct Hrest as (x' & m1' & evs1' & evs2' & Hgm & Hrest' & _).
@@ -71,7 +71,7 @@ Lemma socket_writev_never_admitted : forall fd iov iovcnt i m sk o,
 Proof.
   intros fd iov iovcnt i m sk o Hfd Hspec.
   destruct o as [y m2 evs|]; [|reflexivity]. exfalso.
-  unfold writev_spec, bind, input, get_model in Hspec.
+  unfold writev_spec, bind, input, get_model, Sys_Monad in Hspec.
   destruct Hspec as (x & m1 & evs1 & evs2 & Hin & Hrest & _).
   injection Hin as -> -> ->.
   destruct Hrest as (x' & m1' & evs1' & evs2' & Hgm & Hrest' & _).

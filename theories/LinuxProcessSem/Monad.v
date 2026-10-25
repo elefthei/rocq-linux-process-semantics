@@ -119,7 +119,15 @@
     Because [Sys A] is a RELATION, two specs are "equal" when they relate
     exactly the same outcomes.  We spell that out as [sys_equiv] and prove
     the three monad laws (left identity, right identity, associativity) up
-    to it below, so [pure]/[bind] really do form a monad. *)
+    to it below, so [pure]/[bind] really do form a monad.
+
+    ** The [Monad] class
+
+    [pure] and [bind] are the methods of a [Monad] class, so the
+    [x <- c ;; k] notation serves every instance; [Sys_Monad] is the
+    specification's.  (CTreeModel.Proc gives one for choice trees.)  A
+    proof that unfolds [bind] or [pure] at [Sys] also unfolds [Sys_Monad],
+    which turns the method into the body written in the instance. *)
 
 From Stdlib Require Import ZArith List Bool.
 From LinuxProcessSemantics.LinuxProcessSem Require Import BvBase Fs State.
@@ -134,12 +142,16 @@ Arguments Unmodeled {A}.
 
 Definition Sys (A : Type) : Type := SyscallInput -> Model -> outcome A -> Prop.
 
-Definition pure {A} (x : A) : Sys A := fun _ m o => o = Ok x m [].
+Class Monad (M : Type -> Type) := {
+  pure : forall {A}, A -> M A;
+  bind : forall {A B}, M A -> (A -> M B) -> M B
+}.
 
-(** Sequencing: an [Unmodeled] anywhere in the chain is an [Unmodeled] of the whole
-    program; event lists concatenate in chronological order. *)
-Definition bind {A B} (c : Sys A) (k : A -> Sys B) : Sys B :=
-  fun i m o =>
+#[global] Instance Sys_Monad : Monad Sys := {
+  pure A x := fun _ m o => o = Ok x m [];
+  (* Sequencing: an [Unmodeled] anywhere in the chain is an [Unmodeled] of
+     the whole program; event lists concatenate in chronological order. *)
+  bind A B c k := fun i m o =>
     match o with
     | Unmodeled =>
         c i m Unmodeled \/
@@ -147,7 +159,8 @@ Definition bind {A B} (c : Sys A) (k : A -> Sys B) : Sys B :=
     | Ok y m2 evs =>
         exists x m1 evs1 evs2,
           c i m (Ok x m1 evs1) /\ k x i m1 (Ok y m2 evs2) /\ evs = evs1 ++ evs2
-    end.
+    end
+}.
 
 Declare Scope sys_scope.
 Delimit Scope sys_scope with sys.
@@ -201,7 +214,7 @@ Ltac sys_destruct :=
 (** Left identity: [pure] is a left unit for [bind]. *)
 Lemma bind_pure_l {A B} (a : A) (k : A -> Sys B) : bind (pure a) k ≡ k a.
 Proof.
-  intros i m o; unfold bind, pure; destruct o as [x m' evs | ]; split.
+  intros i m o; unfold bind, pure, Sys_Monad; destruct o as [x m' evs | ]; split.
   - (* -> *) intros H; sys_destruct; rewrite app_nil_l; assumption.
   - (* <- *) intros H; exists a, m, [], evs; rewrite app_nil_l; auto.
   - (* -> *) intros H; sys_destruct; assumption.
@@ -211,7 +224,7 @@ Qed.
 (** Right identity: [pure] is a right unit for [bind]. *)
 Lemma bind_pure_r {A} (c : Sys A) : bind c pure ≡ c.
 Proof.
-  intros i m o; unfold bind, pure; destruct o as [x m' evs | ]; split.
+  intros i m o; unfold bind, pure, Sys_Monad; destruct o as [x m' evs | ]; split.
   - (* -> *) intros H; sys_destruct; rewrite app_nil_r; assumption.
   - (* <- *) intros H; exists x, m', evs, []; rewrite app_nil_r; auto.
   - (* -> *) intros H; sys_destruct; assumption.
@@ -224,7 +237,7 @@ Qed.
 Lemma bind_assoc {A B C} (c : Sys A) (k : A -> Sys B) (h : B -> Sys C) :
   bind (bind c k) h ≡ bind c (fun x => bind (k x) h).
 Proof.
-  intros i m o; unfold bind; destruct o as [z m3 evs | ]; cbn; split.
+  intros i m o; unfold bind, Sys_Monad; destruct o as [z m3 evs | ]; cbn; split.
   - (* Ok, -> *)
     intros (y & m2 & evsA & evsB & (x & m1 & evs1 & evs2 & Hc & Hk & HevsA)
             & Hh & Hevs); subst evsA evs.
@@ -299,7 +312,7 @@ Definition modify (f : Model -> Model) : Sys unit := fun _ m o => o = Ok tt (f m
 Lemma bind_get_model {A} (k : Model -> Sys A) : forall i m o,
   bind get_model k i m o <-> k m i m o.
 Proof.
-  intros i m o. unfold bind, get_model. destruct o as [x m2 evs|]; split.
+  intros i m o. unfold bind, get_model, Sys_Monad. destruct o as [x m2 evs|]; split.
   - intros (x0 & m1 & evs1 & evs2 & H1 & H2 & H3).
     injection H1 as -> -> ->. cbn in H3. subst evs. exact H2.
   - intros H. exists m, m, [], evs. split; [reflexivity|].

@@ -151,7 +151,7 @@ Proof.
   intros i m eff m' evs E Hmark Hspec.
   unfold alloc_budget_refused_b in Hmark. rewrite E, Z.eqb_refl in Hmark.
   apply (proj1 (brk_dispatch i m _ E)) in Hspec.
-  unfold brk_spec, bind, get_model, choose, modify, pure in Hspec.
+  unfold brk_spec, bind, get_model, choose, modify, pure, Sys_Monad in Hspec.
   cbv beta zeta in Hspec. sys_destruct.
   match goal with
   | [ Hok : brk_r_ok m (in_arg i 0) ?r = true |- _ ] =>
@@ -310,7 +310,7 @@ Proof.
   cbv zeta.
   destruct (mmap_modeled_b (in_arg i 2) (in_arg i 3) (in_arg i 5)).
   { intros Hmark Hspec.
-    unfold alt, bind, errno_from, choose, err_ret, ret_only, pure, get_model, modify
+    unfold alt, bind, errno_from, choose, err_ret, ret_only, pure, get_model, modify, Sys_Monad
       in Hspec.
     cbv beta zeta in Hspec. sys_destruct.
     - errno_is_refusal.
@@ -328,7 +328,7 @@ Proof.
                          + page_round_up_Z (bv_unsigned (in_arg i 1)))%Z;
     [intros Hmark; discriminate Hmark |].
   intros Hmark Hspec.
-  unfold alt, bind, errno_from, choose, err_ret, ret_only, pure, get_model, modify
+  unfold alt, bind, errno_from, choose, err_ret, ret_only, pure, get_model, modify, Sys_Monad
     in Hspec.
   cbv beta zeta in Hspec. sys_destruct.
   match goal with
@@ -382,7 +382,7 @@ Proof.
                          + page_round_up_Z (bv_unsigned (in_arg i 1)))%Z;
     [intros Hmark; discriminate Hmark |].
   intros Hmark Hspec.
-  unfold alt, bind, errno_from, choose, err_ret, ret_only, pure, get_model, modify
+  unfold alt, bind, errno_from, choose, err_ret, ret_only, pure, get_model, modify, Sys_Monad
     in Hspec.
   cbv beta zeta in Hspec. sys_destruct.
   match goal with
@@ -1054,7 +1054,7 @@ Proof.
     [intros Hmark; discriminate Hmark |].
   destruct (mprotect_modeled_b (in_arg i 2)); [| intros Hmark; discriminate Hmark].
   cbv zeta. intros Hmark Hspec.
-  unfold alt, bind, errno_from, choose, err_ret, ret_only, pure, get_model, modify
+  unfold alt, bind, errno_from, choose, err_ret, ret_only, pure, get_model, modify, Sys_Monad
     in Hspec.
   cbv beta zeta in Hspec. sys_destruct.
   match goal with

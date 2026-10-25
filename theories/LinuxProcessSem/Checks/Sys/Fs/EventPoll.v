@@ -66,7 +66,7 @@ Proof.
   intros flags32 eff m m' evs i H.
   unfold epoll_create1_spec in H. unfold check_epoll_create1.
   destruct (epoll_create1_outcome flags32) as [r|] eqn:Ho.
-  - unfold pure in H. inv_ok.
+  - unfold pure, Sys_Monad in H. inv_ok.
     apply check_ret_only_ok_iff. repeat split; reflexivity.
   - unfold unmodeled in H. inv_ok.
 Qed.
@@ -78,7 +78,7 @@ Proof.
   intros flags32 m eff i H.
   unfold epoll_create1_spec in H. unfold check_epoll_create1.
   destruct (epoll_create1_outcome flags32) as [r|] eqn:Ho; [|reflexivity].
-  unfold pure in H. inv_ok.
+  unfold pure, Sys_Monad in H. inv_ok.
 Qed.
 
 Definition check_epoll_ctl (i : SyscallInput) (epfd op32 tfd event : word)

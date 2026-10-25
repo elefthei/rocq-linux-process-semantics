@@ -494,7 +494,7 @@ Lemma exit_dispatch_admits : forall i m,
         (with_halted (bv_and (in_arg i 0) (Z_to_bv 64 255)) m) []).
 Proof.
   intros i m Hno. apply (proj2 (exit_dispatch_iff i m _ Hno)).
-  unfold exit_spec, set_halted, ret_only, modify, bind, pure. cbn.
+  unfold exit_spec, set_halted, ret_only, modify, bind, pure, Sys_Monad. cbn.
   eexists tt, (with_halted (bv_and (in_arg i 0) (Z_to_bv 64 255)) m),
     [], []. repeat split; reflexivity.
 Qed.
@@ -511,7 +511,7 @@ Lemma exit_dispatch_forced : forall i m eff m' evs,
 Proof.
   intros i m eff m' evs Hno Hspec.
   apply (proj1 (exit_dispatch_iff i m _ Hno)) in Hspec.
-  unfold exit_spec, set_halted, ret_only, modify, bind, pure in Hspec. cbn in Hspec.
+  unfold exit_spec, set_halted, ret_only, modify, bind, pure, Sys_Monad in Hspec. cbn in Hspec.
   sys_destruct. rewrite app_nil_l in *. repeat split; congruence.
 Qed.
 
@@ -552,7 +552,7 @@ Lemma exit_dispatch_modeled : forall i m,
 Proof.
   intros i m Hno Hspec.
   apply (proj1 (exit_dispatch_iff i m _ Hno)) in Hspec.
-  unfold exit_spec, set_halted, ret_only, modify, bind, pure in Hspec. cbn in Hspec.
+  unfold exit_spec, set_halted, ret_only, modify, bind, pure, Sys_Monad in Hspec. cbn in Hspec.
   sys_destruct.
 Qed.
 

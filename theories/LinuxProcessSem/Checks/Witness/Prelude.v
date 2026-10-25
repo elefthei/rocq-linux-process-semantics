@@ -36,7 +36,7 @@ Qed.
 Lemma emit_pure_ok {A} : forall evs (x : A) i m,
   (emit evs ;; pure x) i m (Ok x m evs).
 Proof.
-  intros. unfold bind; cbv iota. exists tt, m, evs, [].
+  intros. unfold bind, Sys_Monad; cbv iota. exists tt, m, evs, [].
   rewrite app_nil_r. auto using emit_ok, pure_ok.
 Qed.
 

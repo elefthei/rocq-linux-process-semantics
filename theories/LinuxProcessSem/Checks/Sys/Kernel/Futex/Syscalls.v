@@ -109,7 +109,7 @@ Lemma check_futex_wake_private_complete_unmodeled : forall uaddr m i eff,
 Proof.
   intros uaddr m i eff H.
   unfold futex_wake_private_spec in H. unfold check_futex_wake_private.
-  futex_gate uaddr; cbv iota in H; unfold err_ret, ret_only, pure in H;
+  futex_gate uaddr; cbv iota in H; unfold err_ret, ret_only, pure, Sys_Monad in H;
     discriminate.
 Qed.
 
@@ -163,7 +163,7 @@ Proof.
   apply record_copyins_ok_inv in H. destruct H as (core & Hcore & ->).
   destruct (bv_eqb (le_bytes_to_word uval) val) eqn:Hv;
     cbv iota in Hcore |- *; [unfold unmodeled in Hcore; discriminate|].
-  unfold err_ret, ret_only, pure in Hcore. inversion Hcore; subst.
+  unfold err_ret, ret_only, pure, Sys_Monad in Hcore. inversion Hcore; subst.
   cbn [eff_copyins with_copyins app]. apply check_ret_only_copyins_refl.
 Qed.
 
@@ -174,14 +174,14 @@ Proof.
   intros i uaddr val m eff H.
   unfold futex_wait_private_spec in H. unfold check_futex_wait_private.
   futex_gate uaddr; cbv iota in H |- *;
-    try (unfold err_ret, ret_only, pure in H; discriminate).
+    try (unfold err_ret, ret_only, pure, Sys_Monad in H; discriminate).
   apply input_bind_unmodeled_inv in H. cbv beta in H.
   destruct (read_bytes_map (in_mem i) uaddr (Z_to_bv 64 FUTEX_WORD_SIZE))
     as [uval|] eqn:Hr; cbv iota in H |- *; [|reflexivity].
   apply record_copyins_unmodeled_inv in H.
   destruct (bv_eqb (le_bytes_to_word uval) val) eqn:Hv;
     cbv iota in H |- *; [reflexivity|].
-  unfold err_ret, ret_only, pure in H. discriminate.
+  unfold err_ret, ret_only, pure, Sys_Monad in H. discriminate.
 Qed.
 
 (** The op word is tested WHOLE, so the three arms are disjoint by
@@ -263,7 +263,7 @@ Proof.
     cbv iota in H.
   { rewrite (futex_wake_not_wait op Hwake). cbn [andb].
     unfold futex_wake_private_spec, futex_key_check, err_ret, ret_only,
-           pure in H.
+           pure, Sys_Monad in H.
     destruct (negb (futex_aligned_b uaddr)), (negb (access_okb uaddr FUTEX_WORD_SIZE));
       cbv iota in H; inversion H; reflexivity. }
   destruct (bv_eqb op (Z_to_bv 64 FUTEX_WAIT_PRIVATE)) eqn:Hwait;
@@ -273,11 +273,11 @@ Proof.
     [|unfold unmodeled in H; discriminate].
   unfold futex_wait_private_spec, futex_key_check in H.
   destruct (futex_aligned_b uaddr) eqn:Ha; cbn [negb andb] in H |- *;
-    [|cbv iota in H; unfold err_ret, ret_only, pure in H;
+    [|cbv iota in H; unfold err_ret, ret_only, pure, Sys_Monad in H;
       inversion H; reflexivity].
   destruct (access_okb uaddr FUTEX_WORD_SIZE) eqn:Hok;
     cbn [negb andb] in H |- *;
-    [|cbv iota in H; unfold err_ret, ret_only, pure in H;
+    [|cbv iota in H; unfold err_ret, ret_only, pure, Sys_Monad in H;
       inversion H; reflexivity].
   cbv iota in H.
   apply input_bind_ok_inv in H. cbv beta in H.
@@ -286,6 +286,6 @@ Proof.
   apply record_copyins_ok_inv in H. destruct H as (core & Hcore & ->).
   destruct (bv_eqb (le_bytes_to_word uval) (abi_low32 val)); cbv iota in Hcore;
     [unfold unmodeled in Hcore; discriminate|].
-  unfold err_ret, ret_only, pure in Hcore. inversion Hcore; subst.
+  unfold err_ret, ret_only, pure, Sys_Monad in Hcore. inversion Hcore; subst.
   reflexivity.
 Qed.

@@ -33,7 +33,7 @@ Lemma record_copyins_ok : forall reads spec i m eff m' evs,
   record_copyins reads spec i m
     (Ok (with_copyins (reads ++ eff_copyins eff) eff) m' evs).
 Proof.
-  intros. unfold record_copyins, bind, pure.
+  intros. unfold record_copyins, bind, pure, Sys_Monad.
   exists eff, m', evs, []. repeat split; try exact H.
   now rewrite app_nil_r.
 Qed.

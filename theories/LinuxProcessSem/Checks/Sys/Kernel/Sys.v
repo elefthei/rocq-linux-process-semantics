@@ -215,7 +215,7 @@ Proof.
   destruct (negb (Z.eqb (bv_unsigned option_) PR_CAPBSET_READ));
     [now inversion H|].
   destruct ((CAP_LAST_CAP <? bv_unsigned arg2)%Z);
-    unfold err_ret, ret_only, pure in H; inversion H; subst;
+    unfold err_ret, ret_only, pure, Sys_Monad in H; inversion H; subst;
     cbn; rewrite bv_eqb_refl; reflexivity.
 Qed.
 
@@ -228,7 +228,7 @@ Proof.
   destruct (negb (Z.eqb (bv_unsigned option_) PR_CAPBSET_READ)); [reflexivity|].
   exfalso.
   destruct ((CAP_LAST_CAP <? bv_unsigned arg2)%Z);
-    unfold err_ret, ret_only, pure in H; discriminate H.
+    unfold err_ret, ret_only, pure, Sys_Monad in H; discriminate H.
 Qed.
 
 (* =========================================================================

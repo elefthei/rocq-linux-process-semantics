@@ -68,9 +68,9 @@ Lemma check_efault_or_complete_ok : forall fallback i eff m m' evs,
 Proof.
   intros fallback i eff m m' evs H. unfold check_efault_or.
   destruct H as [Hf|Hz].
-  - unfold err_ret, ret_only, pure in Hf. inv_ok.
+  - unfold err_ret, ret_only, pure, Sys_Monad in Hf. inv_ok.
     cbn. rewrite bv_eqb_refl. reflexivity.
-  - unfold ret_only, pure in Hz. inv_ok.
+  - unfold ret_only, pure, Sys_Monad in Hz. inv_ok.
     (* a fallback that also reads as [-EFAULT] is accepted by the first arm *)
     destruct (eff_is_errno EFAULT (mkEffect fallback [] [])) eqn:Hf.
     + apply eff_is_errno_true in Hf. inversion Hf. reflexivity.
