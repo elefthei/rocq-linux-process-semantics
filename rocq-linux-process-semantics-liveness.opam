@@ -1,0 +1,32 @@
+opam-version: "2.0"
+name: "rocq-linux-process-semantics-liveness"
+version: "dev"
+synopsis: "The choice-tree model of rocq-linux-process-semantics read in TICL"
+description: """
+The Rocq theory LinuxProcessSemantics.Liveness: the process tree of
+rocq-linux-process-semantics-ctree as a model of the temporal logic TICL
+(vellvm/ticl).  A machine that must exit halts on every tree path (AF), and
+AF excludes silent divergence after every reachable trace prefix.  Checks
+apply both to the rwx_flag_ns example image and to a modeled self-jump.
+"""
+maintainer: "Theorem Labs"
+authors: ["Theorem Labs"]
+license: "MIT"
+homepage: "https://github.com/theorem-labs/rocq-linux-process-semantics"
+bug-reports: "https://github.com/theorem-labs/rocq-linux-process-semantics/issues"
+dev-repo: "git+https://github.com/theorem-labs/rocq-linux-process-semantics.git"
+depends: [
+  "dune" {>= "3.23"}
+  "rocq-core" {>= "9.2"}
+  "rocq-linux-process-semantics-core" {= version}
+  "rocq-linux-process-semantics-common" {= version}
+  "rocq-linux-process-semantics-examples" {= version}
+  "rocq-linux-process-semantics-ctree" {= version}
+  # Not on opam.  Pin it after rocq-ctree:
+  #   git clone https://github.com/vellvm/ticl.git
+  #   opam pin add -y --ignore-pin-depends -k path rocq-ticl ticl
+  "rocq-ticl"
+]
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]

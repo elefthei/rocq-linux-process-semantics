@@ -25,6 +25,8 @@ From LinuxProcessSemantics.LinuxProcessSem Require Import MemImageType State Run
 From LinuxProcessSemantics.CTreeModel Require Import Proc.
 Import ListNotations CTree.
 Set Universe Polymorphism.
+(* As in [Proc]: keep [procE]'s answer universe generic so TICL's worlds apply. *)
+Unset Universe Minimization ToSet.
 
 Inductive ct_path : list event -> ptree result -> ptree result -> Prop :=
 | ct_path_refl t t' : t ≅ t' -> ct_path [] t t'

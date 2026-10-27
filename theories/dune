@@ -1,6 +1,6 @@
-; The core theory: everything under theories/ except Common/, Examples/ and
-; CTreeModel/, which are theories of their own (see their dune files) and
-; belong to other opam packages.
+; The core theory: everything under theories/ except Common/, Examples/,
+; CTreeModel/ and Liveness/, which are theories of their own (see their dune
+; files) and belong to other opam packages.
 (include_subdirs qualified)
 
 ; Make the direct ReadFileString input present before rocq dep scans the

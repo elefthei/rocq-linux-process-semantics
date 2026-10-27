@@ -35,6 +35,8 @@ From LinuxProcessSemantics.EquivalenceDefinition Require Import Equivalence.
 From LinuxProcessSemantics.CTreeModel Require Import Proc Behavior Block.
 Import ListNotations CTree.
 Set Universe Polymorphism.
+(* As in [Proc]: keep [procE]'s answer universe generic so TICL's worlds apply. *)
+Unset Universe Minimization ToSet.
 
 Section WithSegs.
 

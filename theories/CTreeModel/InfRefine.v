@@ -29,6 +29,8 @@ From LinuxProcessSemantics.CTreeModel Require Import Proc Behavior RunRefine.
 From LinuxProcessSemantics.EquivalenceDefinition Require Import Equivalence.
 Import ListNotations CTree.
 Set Universe Polymorphism.
+(* As in [Proc]: keep [procE]'s answer universe generic so TICL's worlds apply. *)
+Unset Universe Minimization ToSet.
 
 (** Every finite prefix of an infinite trace is a finite trace. *)
 Lemma ct_inf_trace_prefix t s n : ct_inf_trace t s -> ct_traces t (stream_prefix n s).
@@ -105,4 +107,37 @@ Theorem equiv_source_inf_refines_target imgS limS enS imgT limT enT inp s :
 Proof.
   intros [A|[E _]] N H; [contradiction|].
   exact (inf_refines_trace_equiv _ _ _ E (ct_run_inf_refines _ _ _ _ _ H)).
+Qed.
+
+Lemma ct_diverges_equ (t u : ptree result) :
+  t ≅ u -> ct_diverges t -> ct_diverges u.
+Proof.
+  intros E D. destruct D as [t v TR D].
+  apply ct_diverges_intro with v; [now rewrite <- E | exact D].
+Qed.
+
+(** One [τ] step of the machine that emits nothing. *)
+Definition silent_next (segs : list Segment) (c' c : config) : Prop :=
+  sstep segs c [] (SNext c').
+
+(** No silent divergence: when silent machine steps from [c] are
+    well-founded and no reachable state blocks, the tree of [c] has no
+    infinite [τ] path.  Deadlock, faults and infinite observable activity
+    are not excluded. *)
+Theorem proc_no_silent_divergence (segs : list Segment) (c : config) :
+  Acc (silent_next segs) c -> block_free segs c ->
+  ~ ct_diverges (proc segs c).
+Proof.
+  intros A. induction A as [c A IH]. intros BF D.
+  inversion D as [t u TR DU]; subst.
+  apply trans_proc_iff in TR. unfold proc_step in TR.
+  destruct TR as [(c' & SS & HL & E)
+    | [(e & evs & c' & SS & HL & E)
+    | [(HF & HL & E)
+    | [(HD & HL & E)
+    | [(HH & HL & E)
+    | (HB & HL & E)]]]]]; try discriminate HL.
+  - apply (IH c' SS (block_free_step segs c [] c' BF SS)).
+    exact (ct_diverges_equ u (proc segs c') E DU).
+  - exact (BF [] c (star_refl segs c) HB).
 Qed.

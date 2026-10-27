@@ -1,0 +1,15 @@
+; The process tree read in TICL (vellvm/ticl), installed by the opam package
+; rocq-linux-process-semantics-liveness.
+; No subdirectories, but this stanza is what stops the root theories/dune
+; (include_subdirs qualified) from absorbing this directory, as for Common/.
+(include_subdirs qualified)
+
+(rocq.theory
+ (name LinuxProcessSemantics.Liveness)
+ (package rocq-linux-process-semantics-liveness)
+ ; dune does not know the dependencies of an installed theory, so the
+ ; transitive ones of CTreeModel, Examples and TICL are listed too.
+ (theories Stdlib stdpp ReadFile Flocq LinuxProcessSemantics
+           LinuxProcessSemantics.CTreeModel LinuxProcessSemantics.Common
+           LinuxProcessSemantics.Examples
+           CTree TICL ITree ExtLib Paco Coinduction RelationAlgebra Equations))
