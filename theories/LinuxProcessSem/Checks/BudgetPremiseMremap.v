@@ -122,7 +122,7 @@ Proof.
     by (apply Z.ltb_ge; lia).
   rewrite Heq, Hlt, Hip in Hspec. cbv beta iota zeta in Hspec.
   unfold alt, bind, errno_from, choose, err_ret, ret_only, pure, modify in Hspec.
-  cbv beta iota zeta in Hspec. sys_destruct.
+  cbv beta iota zeta in Hspec. cbn [Sys_Monad] in Hspec. sys_destruct.
   - (* the injected errno *)
     match goal with
     | [ Hin : In ?e mremap_errnos |- _ ] =>
